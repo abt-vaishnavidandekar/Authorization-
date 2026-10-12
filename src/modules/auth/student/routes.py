@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from configs.database import get_db
-from modules.auth.student.functions import register_student
-from modules.auth.student.interfaces import StudentCreate
+from modules.auth.student.functions import register_student, get_student_profile, update_student
+from modules.auth.student.interfaces import StudentCreate, StudentUpdate
 from modules.auth.student.models import Student
 from utils.role import get_current_user
 
@@ -46,12 +46,43 @@ async def student_register(
 
 
 @student_router.get("/me")
-async def get_student_profile(
+async def get_student(
     current_user: Student = Depends(get_current_user),
 ):
-    return {
-        "id": current_user.id,
-        "first_name": current_user.first_name,
-        "email": current_user.email,
-    }
+    return await get_student_profile(current_user=current_user)
 
+
+
+@student_router.put("/stu_update/{student_id}")
+async def update(
+    student_id: int,
+    first_name: str | None = Form(default=None),
+    last_name: str | None = Form(default=None),
+    age: int | None = Form(default=None),
+    email: str | None = Form(default=None),
+    ph_no: str | None = Form(default=None),
+    profile_image: UploadFile | None = File(default=None),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    data = StudentUpdate(
+        **{
+            key: value
+            for key, value in {
+                "first_name": first_name,
+                "last_name": last_name,
+                "age": age,
+                "email": email,
+                "ph_no": ph_no,
+            }.items()
+            if value is not None
+        }
+    )
+
+    return await update_student(
+        student_id=student_id,
+        data=data,
+        current_user=current_user,
+        db=db,
+        profile_image=profile_image,
+    )

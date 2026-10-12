@@ -95,7 +95,13 @@ async def update_user(
 ):
     if isinstance(current_user, Student):
         if current_user.id != user_id:
-            raise HTTPException(403, "You can update only your own profile")
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={
+                    "success" : False,
+                    "msg" : "You can update only your own profile"
+                }
+            )
         user = current_user
 
     elif isinstance(current_user, Admin):
@@ -105,10 +111,22 @@ async def update_user(
             user = await db.get(Student, user_id)
 
             if not user:
-                raise HTTPException(404, "Student not found")
+                return JSONResponse(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    content={
+                        "success" : False,
+                        "msg" : "Student not found"
+                        }
+                    )
 
     else:
-        raise HTTPException(403, "Permission denied")
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={
+                "success" : False,
+                "msg" : "Permission denied"
+                }
+            )
 
     updates = data.model_dump(exclude_unset=True, exclude_none=True)
 
@@ -122,7 +140,14 @@ async def update_user(
 
     if profile_image is not None:
         if not hasattr(user, "profile_image"):
-            raise HTTPException(400, "Profile image is not supported for this account")
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "success" : False,
+                    "msg" : "Profile image is not supported for this account"
+                    }
+                )
+        
         user.profile_image = await save_profile_image(profile_image)
 
     await db.commit()
@@ -135,7 +160,13 @@ async def delete_student(student_id: int, db: AsyncSession):
     student = await db.get(Student, student_id)
 
     if not student:
-        raise HTTPException(404, "Student not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "success" : False,
+                "msg": "Student not found"
+            }
+    )
 
     await db.delete(student)
     await db.commit()

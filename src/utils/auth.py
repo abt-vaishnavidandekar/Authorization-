@@ -8,6 +8,24 @@ from utils.jwt import create_access_token, create_refresh_token
 from utils.security import verify_password
 
 
+from fastapi import (
+    APIRouter,
+    Cookie,
+    Depends,
+    Response,
+)
+from jose import JWTError, jwt
+from .otp_service import OTPRequest, PasswordResetRequest
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from configs.database import get_db
+from utils.jwt import ALGORITHM, SECRET_KEY
+from utils.otp_service import generate_otp, verify_otp
+from utils.role import get_current_user
+from utils.security import hash_password
+
+
 async def login_user(email: str, password: str, db: AsyncSession):
     for model, role in (
         (Admin, "admin"),
@@ -33,25 +51,6 @@ async def login_user(email: str, password: str, db: AsyncSession):
     )
 
 
-
-
-from fastapi import (
-    APIRouter,
-    Cookie,
-    Depends,
-    Response,
-)
-from jose import JWTError, jwt
-from modules.auth.admin.functions import login_user
-from .otp_service import OTPRequest, PasswordResetRequest
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from configs.database import get_db
-from utils.jwt import ALGORITHM, SECRET_KEY
-from utils.otp_service import generate_otp, verify_otp
-from utils.role import get_current_user
-from utils.security import hash_password
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
