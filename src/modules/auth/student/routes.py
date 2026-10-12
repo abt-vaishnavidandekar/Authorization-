@@ -53,9 +53,9 @@ async def get_student(
 
 
 
-@student_router.put("/stu_update/{student_id}")
+@student_router.put("/stu_update/{user_id}")
 async def update(
-    student_id: int,
+    user_id : int,
     first_name: str | None = Form(default=None),
     last_name: str | None = Form(default=None),
     age: int | None = Form(default=None),
@@ -80,7 +80,7 @@ async def update(
     )
 
     return await update_student(
-        student_id=student_id,
+        user_id=user_id,
         data=data,
         current_user=current_user,
         db=db,

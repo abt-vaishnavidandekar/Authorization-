@@ -97,6 +97,8 @@ async def login(
         "role": tokens["role"],
     }
 
+
+
 @auth_router.post("/refresh")
 async def refresh_access_token(
     response: Response,
@@ -163,6 +165,7 @@ async def refresh_access_token(
     )
 
     return {"message": "Access token refreshed"}
+
 
 
 @auth_router.post("/logout")

@@ -8,6 +8,8 @@ class AdminCreate(BaseModel):
     password: str 
 
 
+
 class AdminUpdate(BaseModel):
-    first_name : str
-    last_name : str
+    first_name: str | None = None
+    last_name: str | None = None
+

@@ -69,19 +69,43 @@ async def get_student_by_id(student_id: int, db: AsyncSession):
 
 
 
-async def update_admin(user_id : int, data: AdminUpdate, admin: Admin, db: AsyncSession):
+async def update_admin(user_id: int, data: AdminUpdate, current_admin: Admin, db: AsyncSession):
 
-    for field, value in data.model_dump(exclude_unset=True).items():
-        setattr(admin, field, value)
+    if current_admin.id == user_id:
+        admin_to_update = current_admin
+    else:
+        admin_to_update = await db.get(Admin, user_id)
+        if not admin_to_update:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={
+                    "success" : False,
+                    "msg" : "Admin profile not found"
+                }
+              
+            )
+
+  
+    updates = data.model_dump(exclude_unset=True, exclude_none=True)
+  
+    protected_fields = {"id", "password_hash"}
+    
+    for field, value in updates.items():
+        if field not in protected_fields and hasattr(admin_to_update, field):
+            setattr(admin_to_update, field, value)
 
     await db.commit()
-    await db.refresh(admin)
+    await db.refresh(admin_to_update)
 
     return {
-        "id": admin.id,
-        "email": admin.email,
-        "first_name": admin.first_name,
-        "last_name": admin.last_name,
+        "success": True,
+        "message": "Admin profile updated successfully",
+        "data": {
+            "id": admin_to_update.id,
+            "email": admin_to_update.email,
+            "first_name": admin_to_update.first_name,
+            "last_name": admin_to_update.last_name,
+        }
     }
 
 

@@ -65,20 +65,25 @@ async def get_student(
         "profile_image": student.profile_image,
     }
 
-@admin_router.patch("/admin_update/{admin_id}}")
-async def admin_update(
-    admin_id : int,
+@admin_router.put("/update/{user_id}")
+async def put_admin_update(
+    user_id: int, 
     data: AdminUpdate,
-    current_admin: Admin = Depends(require_role("admin")),
+    current_admin: Admin = Depends(require_role("admin")), 
     db: AsyncSession = Depends(get_db),
 ):
-    return await update_admin(admin_id=admin_id, data=data, admin=current_admin, db=db)
+    return await update_admin(
+        user_id=user_id,
+        data=data,
+        current_admin=current_admin,
+        db=db,
+    )
 
 
 
-@admin_router.put("/stu_update/{student_id}")
+@admin_router.put("/stu_update/{user_id}")
 async def update(
-    student_id: int,
+    user_id: int,
     first_name: str | None = Form(default=None),
     last_name: str | None = Form(default=None),
     age: int | None = Form(default=None),
@@ -103,7 +108,7 @@ async def update(
     )
 
     return await update_user(
-        student_id=student_id,
+        user_id=user_id,
         data=data,
         current_user=current_user,
         db=db,
